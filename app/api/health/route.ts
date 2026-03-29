@@ -1,4 +1,4 @@
-import { CheckDatabaseConnection } from "@/app/lib/db";
+import { CheckDatabaseConnection } from "../../lib/db";
 import { NextResponse } from "next/server";
 export async function GET() {
     const isConnected = await CheckDatabaseConnection();
