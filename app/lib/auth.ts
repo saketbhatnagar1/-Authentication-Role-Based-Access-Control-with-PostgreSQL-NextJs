@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { prisma } from "./db"
 import { cookies } from "next/headers"
-import { User } from "../types"
+import { User,Role,roleHeirarchy } from "../types"
 
 export const hashPassword = async (password: string): Promise<string> => {
     return bcrypt.hash(password,12)
@@ -43,3 +43,14 @@ export const getCurrentUser = async ():Promise<User|null> => {
         return null
     }
 }
+
+export const CheckUserPermission = (
+    user: User,
+    requiredrole:Role,
+):boolean =>{
+    if (roleHeirarchy[user.role] >= 1)
+    {
+        return true
+    }
+    return false
+} //heirarchy:lower the number higher the heirarchy
