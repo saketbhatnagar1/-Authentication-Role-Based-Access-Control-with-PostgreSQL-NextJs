@@ -16,3 +16,15 @@ export async function CheckDatabaseConnection(): Promise<boolean>{
         return false;
     }
 }
+
+export async function CheckUserExists(email:string): Promise<boolean>{
+    
+    const existingUser = await prisma.user.findUnique({
+        where:{email:email} 
+    })
+    if (existingUser) {
+        return true
+    } else {
+        return false
+    }
+}
