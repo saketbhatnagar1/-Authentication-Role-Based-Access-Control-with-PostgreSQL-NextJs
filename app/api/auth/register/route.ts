@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma,CreateUser } from "../../../lib/db";
 import { CheckTeamExists, CheckUserExists, FindTeamByTeamCode } from "../../../lib/db";
-import { hashPassword, validatePassword } from "../../../lib/auth";
+import { generateToken, hashPassword, validatePassword } from "../../../lib/auth";
 
 export async function POST(request: NextRequest) {
     try {
         const { name, email, password, teamCode } = await request.json();
-
-        
+        console.log(`name is :${name}, email is :${email}, password is :${password}`)
         if (!name || !email || !password) {
             return NextResponse.json(
                 { error: "name, email or password invalid" },
                 { status: 400 }
             );
         }
-
         // check existing user
         const existingUser = await CheckUserExists(email);
         if (existingUser) {
@@ -23,8 +21,6 @@ export async function POST(request: NextRequest) {
                 { status: 409 }
             );
         }
-
-        
         let teamId: string | undefined;
 
         if (teamCode) {
@@ -40,8 +36,6 @@ export async function POST(request: NextRequest) {
             const userTeam = await FindTeamByTeamCode(teamCode);
             teamId = userTeam.id;
         }
-
-        
         const passwordError = validatePassword(password);
         if (passwordError) {
             return NextResponse.json(
@@ -49,26 +43,42 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
-
-        
         const hashedPassword = await hashPassword(password);
-
-        
         const newUser = await CreateUser({
-    name,
-    email,
-    password: hashedPassword,
-    teamId
+        name,
+        email,
+        password: hashedPassword,
+        teamId
 });
+        //generate Token
+        
+        const token = generateToken(newUser.id)
 
-        return NextResponse.json(
-            { message: "User created successfully", user: newUser },
-            { status: 201 }
+        const response = NextResponse.json(
+            {
+                user: {
+                id:newUser.id,
+                name: newUser.name,
+                    email: newUser.email,
+                    role: newUser.role,
+                    teamId: newUser.teamId,
+                    team: newUser.teamId,
+                    token
+                
+            }}
         );
+        //set cookie:
+        response.cookies.set("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge:60*60*24*70,
+        })
 
+        return response
     } catch (error) {
-        return NextResponse.json(
-            { error: "Internal server error" },
+            return NextResponse.json(
+            { error: `Internal server error:{error}` },
             { status: 500 }
         );
     }

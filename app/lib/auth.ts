@@ -54,3 +54,31 @@ export const CheckUserPermission = (
     }
     return false
 } //heirarchy:lower the number higher the heirarchy
+
+
+export function validatePassword(password: string): string | null {
+    if (password.length < 8) {
+        return "Password must be at least 8 characters long";
+    }
+    if (!/[A-Z]/.test(password)) {
+        return "Password must include at least one uppercase letter";
+    }
+    if (!/[a-z]/.test(password)) {
+        return "Password must include at least one lowercase letter";
+    }
+    if (!/\d/.test(password)) {
+        return "Password must include at least one number";
+    }
+    if (!/[@$!%*?&]/.test(password)) {
+        return "Password must include at least one special character";
+    }
+
+    return null; // valid
+}
+
+export async function CheckPassword(
+  plainPassword: string,
+  hashedPassword: string
+) {
+  return await bcrypt.compare(plainPassword, hashedPassword);
+}

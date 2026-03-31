@@ -29,7 +29,7 @@ export async function CheckUserExists(email:string): Promise<boolean>{
     }
 }
 
-export async function findUserByEmail(email: string): Promise<User> {
+export async function FindUserByEmail(email: string): Promise<User> {
     const user = await prisma.user.findUnique({
         where: { email }
     });
@@ -41,7 +41,7 @@ export async function findUserByEmail(email: string): Promise<User> {
     return user;
 }
 
-export async function checkTeamExists(code: string):Promise<boolean>{
+export async function CheckTeamExists(code: string):Promise<boolean>{
     
     const TeamId = await prisma.team.findUnique(
         {where:{code:code}}
@@ -54,7 +54,7 @@ export async function checkTeamExists(code: string):Promise<boolean>{
 
 }
 
-export async function findTeamById(id: string): Promise<Team> {
+export async function FindTeamById(id: string): Promise<Team> {
     const team = await prisma.team.findUnique({
         where: { id: id }
     });
@@ -64,4 +64,28 @@ export async function findTeamById(id: string): Promise<Team> {
     }
 
     return team;
+}
+
+
+export async function FindTeamByTeamCode(code: string): Promise<Team> {
+    const team = await prisma.team.findUnique({
+        where: { code: code }
+    });
+
+    if (!team) {
+        throw new Error("team not found");
+    }
+
+    return team;
+}
+
+export async function CreateUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    teamId?: string;
+}) {
+    return prisma.user.create({
+        data
+    });
 }
