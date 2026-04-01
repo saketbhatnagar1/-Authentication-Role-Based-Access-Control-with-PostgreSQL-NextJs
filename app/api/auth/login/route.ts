@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CheckUserExists, FindUserByEmail } from "../../../lib/db";
-import { CheckPassword } from "../../../lib/auth";
+import { CheckPassword, generateToken } from "../../../lib/auth";
 export async function POST(request:NextRequest) {
 
     try {
@@ -17,10 +17,10 @@ export async function POST(request:NextRequest) {
                 { status: 409 }
             );
         }
-        const user = await FindUserByEmail(email)
+        const userFromDb = await FindUserByEmail(email)
 
         //verify password
-        const isValid = CheckPassword(password, user.password);
+        const isValid = CheckPassword(password, userFromDb.password);
         if(!isValid)
         {
             return NextResponse.json(
@@ -29,9 +29,21 @@ export async function POST(request:NextRequest) {
             )
         }
 
-        return NextResponse.json({
-            message: "Logged in successfully",
-        })
+        const token = generateToken(userFromDb.id)
+        
+
+        const response = NextResponse.json({
+  message: "Login successful"
+});
+
+response.cookies.set("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+  path: "/",
+});
+
+return response;
     }
     catch (error) {
     console.error(error);
