@@ -6,7 +6,6 @@ import { getCurrentUser } from "../../../lib/auth";
 export async function GET(request:NextRequest) {
     
     try {
-
         const user = await getCurrentUser()
 
         if (!user) {
@@ -28,6 +27,4 @@ export async function GET(request:NextRequest) {
             status:500
         })
     }
-
-
 }

@@ -1,0 +1,176 @@
+node js required
+
+some db installed postgres//nosql are different, prisma is orm built for sql db'some
+
+steps:
+npm init -y for nodejs project
+npm i --save-dev prisma typescript ts-node @types/node nodemon
+
+tsconfig.json=>Contains typescript configuration
+
+
+
+npx prisma init --datasource-provider postgressql =>Initializes prisma
+
+in schema.prisma we get generator and datasource
+
+generator=>What our code is generating into
+
+
+provider=> db provider
+
+schema design::
+
+model User
+{
+    //we need id inside every prisma model
+    id Int @id @default(autoincrement())
+    name String 
+}
+
+after creating the model and schema we have to apply migrations to our db i.e by running npx priisma migrate dev=>Push the migration to our db
+npx prisma dev =>Creates a migration for our db..we have to run our migration to reflect changes made in schema to the db
+
+Prisma Client => Client is all the code that interacts with the db, so when we add a client it updates the code based on out modifications to the schema
+
+npm i prisma-client installs a client 
+
+create a new client: (Syntax Changed in version 17)
+
+improt {PrismaClient}
+
+const primsa = new PrismaClient
+
+examples:
+primsa.user.find_first({})
+//create 
+
+const user  = await prisma.user.create({data:{name:"Saket"}})
+console.log(user)
+
+Generator:=> Multiple generators for prisma client 
+
+///////////////////////////////MODELS///////////////////////////////////
+
+models represent diffrent atbles inside db
+
+each model consists of different fields, each row is made of field 
+
+4 parts: name,type,Modifiers,Attribures=>Start with @ (modifiers and attributes are optional)
+
+
+Types= string,boolean,int,BigInt,float,dateTime,json,Bytes(for images i think),unsupported("")
+
+
+//model relationShip: (study db relationships)
+
+one to many(user can have many posts)
+example:
+model User{
+    id Int @id @default(autoincrement())
+    name string 
+    email string
+    preferences Json?
+    post Post[] // [] is an modifier it means there can be many posts, ? means optional field
+}
+
+one to many ()
+
+model Post{
+    rating float
+    author User @relationShip(fields:[userId],references:[id])//fields in out id references which id in User table and references is our foreign key
+    userId : Int
+    authorId String
+
+}
+
+
+//in case a user has written posts and favoirated post in Post Table,
+
+model User{
+    id Int @id @default(autoincrement())
+    name string 
+    email string
+    preferences Json?
+    post Post[]            @reference("Written Post")      // [] is an modifier it means there can be many posts, ? means optional field
+    FavoritePost Post[]     @reference("Favorite Post")    //this is also an reference to our Post 
+}
+
+one to many ()
+
+model Post{
+    rating float
+    author User @relationShip("Written Post",fields:[userId],references:[id])//fields in out id references which id in User table and references is our foreign key
+    userId : Int
+    authorId String
+    FavoriteBy  user?  @relationShip("Favorite Post",fields:[FavoritePostById],references:[id])//Fields in Favorite Post 
+    FavoritePostById?  
+
+}
+
+
+many to many 
+
+
+model Post{
+    rating float
+    author User @relationShip("Written Post",fields:[userId],references:[id])//fields in out id references which id in User table and references is our foreign key
+    userId : Int
+    authorId String
+    FavoriteBy  user?  @relationShip("Favorite Post",fields:[FavoritePostById],references:[id])//Fields in Favorite Post 
+    FavoritePostById?  
+    categories Category[]
+}
+
+
+model category {
+    id String @id @default(uuid())
+    post Post[]
+
+}
+
+
+one to one:
+model User{
+    id Int @id @default(autoincrement())
+    name string 
+    email string
+    preferences Json?
+    post Post[]            @reference("Written Post")      // [] is an modifier it means there can be many posts, ? means optional field
+    FavoritePost Post[]     @reference("Favorite Post")    //this is also an reference to our Post 
+    UserPreference
+}
+
+model UserPreference {
+    id String @id @default(uuid())
+    emailUpdates boolean
+    user User @reference("user preference",fields[userId],references:[id])
+    userID int @unique
+}
+
+//attributes:
+@updatedAt =>used with 
+@unique
+
+
+
+
+enum: used for hardcoded list of values
+
+
+functionalities: CRUD:
+
+const prisma = new PrismaClient()
+
+await ptisma.user.creat({
+    data:{
+        name:"Sakte"    
+        email:"saket@test.com"
+        age:25,        
+        }
+
+})
+
+
+
+we can use includes
